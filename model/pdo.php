@@ -169,3 +169,25 @@ function decryptNumber($encrypted)
 
     return $decrypted;
 }
+
+/**
+ * Cập nhật trạng thái đơn hàng khi ngày hẹn đã qua và status khác 4
+ */
+function pdo_update_expired_orders()
+{
+    $sql = "UPDATE orders
+            SET status = 6
+            WHERE status <> 4 and status <>5
+            AND appointment_date < CURDATE()";
+
+    try {
+        $conn = pdo_get_connection();
+        $stmt = $conn->prepare($sql);
+        $stmt->execute();
+    } catch (PDOException $e) {
+        // Xử lý ngoại lệ nếu có lỗi
+        throw $e;
+    } finally {
+        unset($conn);
+    }
+}

@@ -6,20 +6,20 @@ function services_insert($name, $img, $price, $old_price, $describe1, $describe2
     $sql = "INSERT INTO product(name, img, price, old_price, describe1, describe2, bestseller, hot, new, iddm, service) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
     pdo_execute($sql, $name, $img, $price, $old_price, $describe1, $describe2, $bestseller, $hot, $new, $iddm, 1);
 }
-function sanpham_insert($name, $img, $price, $old_price, $describe1, $describe2, $bestseller, $hot, $new, $iddm)
+function sanpham_insert($name, $img, $price, $old_price, $describe1, $describe2, $bestseller, $hot, $new, $iddm, $stock)
 {
-    $sql = "INSERT INTO product(name, img, price, old_price, describe1, describe2, bestseller, hot, new, iddm) VALUES (?,?,?,?,?,?,?,?,?,?)";
-    pdo_execute($sql, $name, $img, $price, $old_price, $describe1, $describe2, $bestseller, $hot, $new, $iddm);
+    $sql = "INSERT INTO product(name, img, price, old_price, describe1, describe2, bestseller, hot, new, iddm ,stock) VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+    pdo_execute($sql, $name, $img, $price, $old_price, $describe1, $describe2, $bestseller, $hot, $new, $iddm, $stock);
 }
 
-function sanpham_update($name, $img, $price, $old_price, $describe1, $describe2, $bestseller, $hot, $new, $iddm, $id)
+function sanpham_update($name, $img, $price, $old_price, $describe1, $describe2, $bestseller, $hot, $new, $iddm, $id, $stock)
 {
     if ($img != "") {
-        $sql = "UPDATE product SET name=?, img=?, price=?, old_price=?, describe1=?, describe2=?, bestseller=?, hot=?, new=?, iddm=? WHERE id=?";
-        pdo_execute($sql, $name, $img, $price, $old_price, $describe1, $describe2, $bestseller, $hot, $new, $iddm, $id);
+        $sql = "UPDATE product SET name=?, img=?, price=?, old_price=?, describe1=?, describe2=?, bestseller=?, hot=?, new=?, iddm=? , stock=? WHERE id=?";
+        pdo_execute($sql, $name, $img, $price, $old_price, $describe1, $describe2, $bestseller, $hot, $new, $iddm, $stock, $id);
     } else {
-        $sql = "UPDATE product SET name=?, price=?, old_price=?, describe1=?, describe2=?, bestseller=?, hot=?, new=?, iddm=? WHERE id=?";
-        pdo_execute($sql, $name, $price, $old_price, $describe1, $describe2, $bestseller, $hot, $new, $iddm, $id);
+        $sql = "UPDATE product SET name=?, price=?, old_price=?, describe1=?, describe2=?, bestseller=?, hot=?, new=?, iddm=? , stock=?  WHERE id=?";
+        pdo_execute($sql, $name, $price, $old_price, $describe1, $describe2, $bestseller, $hot, $new, $iddm, $stock, $id);
     }
 }
 
@@ -317,7 +317,7 @@ function showsp_($dssp)
                             </div>
                         </div>
                         <div class="product__items--content">
-                            <h3 class="product__items--content__title h4"><a href="' . $link . '">' . $name . '</a></h3>
+                            <h3 class="product__items--content__title h4"><a  >' . $name . '</a></h3>
                             <div class="product__items--price">
                                 <span class="current__price">' . $gia . '</span>
                                 <span class="price__divided"></span>
@@ -504,41 +504,44 @@ function showsp_admin($dssp)
             $newcheck = '';
         }
         $html_dssp .= '<article class="itemlist">
-                    <div class="row align-items-center">
-                        <div class="col-lg-1 col-quantity"> 
-                            <span>' . $id . '</span> 
-                        </div>
-                        <div class="col-lg-2 col-sm-4 col-8 flex-grow-1 col-name">
-                            <a class="itemside" href="#">
-                                <div class="left">
-                                    <img src="' . IMG_PATH_ADMIN . $img . '" class="img-sm img-thumbnail" alt="Item">
-                                </div>
-                                <div class="info">
-                                    <h6 class="mb-0">' . $name . '</h6>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-lg-1 col-sm-2 col-4 col-price"> 
-                            <span>' . $gia . '</span> 
-                        </div>
-                        <div class="col-lg-1 col-sm-2 col-4 col-old_price">
-                            <span><del>' . $gia_cu . '</del></span> 
-                        </div>
-                        <div class="col-lg-5 col-sm-2 col-4 col-describe">
-                            <p>' . $describe1 . '</p>
-                        </div>
-                        <div class="col-lg-1 col-sm-2 col-4 col-action text-end">
-                            <a href="index.php?pg=page-update-product&id=' . $id . '" class="btn btn-sm font-sm rounded btn-brand">
-                                <i class="material-icons md-edit"></i>Sửa</a>
-                            <a href="index.php?pg=delproduct&id=' . $id . '" class="btn btn-sm font-sm btn-light rounded">
-                                <i class="material-icons md-delete_forever"></i>Xóa
-                            </a>
-                        </div>
-                        <input hidden type="checkbox" name="best" ' . $bestcheck . ' class="form-control1">
-                        <input hidden type="checkbox" name="new" ' . $newcheck . ' class="form-control1">
-                        <input hidden type="checkbox" name="hot" ' . $hotcheck . ' class="form-control1">
+        <div class="row align-items-center">
+            <div class="col-lg-1 col-quantity">
+                <span>' . $id . '</span>
+            </div>
+            <div class="col-lg-2 col-sm-4 col-8 flex-grow-1 col-name">
+                <a class="itemside" href="#">
+                    <div class="left">
+                        <img src="' . IMG_PATH_ADMIN . $img . '" class="img-sm img-thumbnail" alt="Item">
                     </div>
-                </article>';
+                    <div class="info">
+                        <h6 class="mb-0">' . $name . '</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-lg-1 col-sm-2 col-4 col-price">
+                <span>' . $gia . '</span>
+            </div>
+            <div class="col-lg-1 col-sm-2 col-4 col-old_price">
+                <span><del>' . $gia_cu . '</del></span>
+            </div>
+            <div class="col-lg-1 col-sm-2 col-4 col-stock">
+                <span>' . $stock . '</span>
+            </div>
+            <div class="col-lg-4 col-sm-2 col-4 col-describe">
+                <p>' . $describe1 . '</p>
+            </div>
+            <div class="col-lg-1 col-sm-2 col-4 col-action text-end">
+                <a href="index.php?pg=page-update-product&id=' . $id . '" class="btn btn-sm font-sm rounded btn-brand">
+                    <i class="material-icons md-edit"></i>Sửa</a>
+                <a href="index.php?pg=delproduct&id=' . $id . '" class="btn btn-sm font-sm btn-light rounded">
+                    <i class="material-icons md-delete_forever"></i>Xóa
+                </a>
+            </div>
+            <input hidden type="checkbox" name="best" ' . $bestcheck . ' class="form-control1">
+            <input hidden type="checkbox" name="new" ' . $newcheck . ' class="form-control1">
+            <input hidden type="checkbox" name="hot" ' . $hotcheck . ' class="form-control1">
+        </div>
+    </article>';
         $i++;
     }
     return $html_dssp;
@@ -648,17 +651,28 @@ function get_dssp_all()
     return pdo_query($sql);
 }
 
+
 function hien_thi_so_trang_services($productlist, $soluongsp)
 {
+    // Count the total number of products in the list
     $tong_sp = count($productlist);
+
+    // Calculate the total number of pages required
     $sotrang = ceil($tong_sp / $soluongsp);
+
+    // Initialize an empty string to hold the HTML for pagination
     $html_sotrang = "";
 
+    // Loop through the total number of pages and generate the HTML for each page link
     for ($i = 1; $i <= $sotrang; $i++) {
-        $html_sotrang .= '<li class="page-item active">
+        // Add 'active' class only to the first page initially
+        $active_class = ($i == 1) ? ' active' : '';
+        $html_sotrang .= '<li class="page-item' . $active_class . '">
                           <a class="page-link" href="index.php?pg=services-list&page=' . $i . '">' . $i . '</a>
                           </li>';
     }
+
+    // Return the generated HTML string for pagination
     return $html_sotrang;
 }
 

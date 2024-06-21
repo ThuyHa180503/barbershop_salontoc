@@ -31,11 +31,16 @@ function count_pending_orders()
 }
 function count_cancle_orders()
 {
-    $sql = "SELECT COUNT(*) as total_pending_orders FROM orders WHERE status = 6";
+    $sql = "SELECT COUNT(*) as total_pending_orders FROM orders WHERE status = 5";
     $result = pdo_query($sql);
     return $result[0]['total_pending_orders'];
 }
-
+function count_cancle1_orders()
+{
+    $sql = "SELECT COUNT(*) as total_cancle1_orders FROM orders WHERE status = 6";
+    $result = pdo_query($sql);
+    return $result[0]['total_cancle1_orders'];
+}
 function get_orders_today()
 {
     $sql = "SELECT * FROM orders WHERE DATE(appointment_date) = CURDATE()";
@@ -192,41 +197,101 @@ function get_monthly_revenue_products()
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function get_appointments_by_status($start_date, $end_date)
+function get_appointments_by_status($start_date, $end_date, $keyword = '')
 {
     $pdo = pdo_get_connection();
 
-    $sql_successful = "SELECT * FROM orders WHERE appointment_date BETWEEN :start_date AND :end_date AND status = 4";
+    // Prepare the keyword for SQL LIKE clause
+    $keyword = '%' . $keyword . '%';
+
+    $sql_successful = "
+        SELECT orders.*, users.name 
+        FROM orders 
+        JOIN users ON users.id = orders.iduser 
+        WHERE orders.appointment_date BETWEEN :start_date AND :end_date 
+        AND (users.name LIKE :keyword OR orders.nguoidat_ten LIKE :keyword)
+        AND orders.status = 2
+    ";
     $stmt_successful = $pdo->prepare($sql_successful);
     $stmt_successful->execute([
         ':start_date' => $start_date,
-        ':end_date' => $end_date
+        ':end_date' => $end_date,
+        ':keyword' => $keyword
     ]);
     $successful_appointments = $stmt_successful->fetchAll(PDO::FETCH_ASSOC);
 
-    $sql_missed = "SELECT * FROM orders WHERE appointment_date BETWEEN :start_date AND :end_date AND status = 1";
+    $sql_missed = "
+        SELECT orders.*, users.name 
+        FROM orders 
+        JOIN users ON users.id = orders.iduser 
+        WHERE orders.appointment_date BETWEEN :start_date AND :end_date 
+        AND (users.name LIKE :keyword OR orders.nguoidat_ten LIKE :keyword)
+        AND orders.status = 1
+    ";
     $stmt_missed = $pdo->prepare($sql_missed);
     $stmt_missed->execute([
         ':start_date' => $start_date,
-        ':end_date' => $end_date
+        ':end_date' => $end_date,
+        ':keyword' => $keyword
     ]);
     $missed_appointments = $stmt_missed->fetchAll(PDO::FETCH_ASSOC);
 
+    $sql_cancel = "
+        SELECT orders.*, users.name 
+        FROM orders 
+        JOIN users ON users.id = orders.iduser 
+        WHERE orders.appointment_date BETWEEN :start_date AND :end_date 
+        AND (users.name LIKE :keyword OR orders.nguoidat_ten LIKE :keyword)
+        AND orders.status = 5
+    ";
+    $stmt_cancel = $pdo->prepare($sql_cancel);
+    $stmt_cancel->execute([
+        ':start_date' => $start_date,
+        ':end_date' => $end_date,
+        ':keyword' => $keyword
+    ]);
+    $cancel_appointments = $stmt_cancel->fetchAll(PDO::FETCH_ASSOC);
+
+    $sql_cancel1 = "
+        SELECT orders.*, users.name 
+        FROM orders 
+        JOIN users ON users.id = orders.iduser 
+        WHERE orders.appointment_date BETWEEN :start_date AND :end_date 
+        AND (users.name LIKE :keyword OR orders.nguoidat_ten LIKE :keyword)
+        AND orders.status = 6
+    ";
+    $stmt_cancel1 = $pdo->prepare($sql_cancel1);
+    $stmt_cancel1->execute([
+        ':start_date' => $start_date,
+        ':end_date' => $end_date,
+        ':keyword' => $keyword
+    ]);
+    $cancel1_appointments = $stmt_cancel1->fetchAll(PDO::FETCH_ASSOC);
+
     return [
         'successful' => $successful_appointments,
-        'missed' => $missed_appointments
+        'missed' => $missed_appointments,
+        'cancel' => $cancel_appointments,
+        'cancel1' => $cancel1_appointments,
     ];
 }
+//ĐÂY LÀ ĐƠN HÀNG HOÀN THÀNH --TUY NHIÊN ĐỔI TÊN SỢ LỖI
 function get_appointments_by_status_($start_date, $end_date, $kyw = null)
 {
     $pdo = pdo_get_connection();
 
-    // Base SQL query to select pending appointments within the date range and status 0
-    $sql_pending = "SELECT * FROM orders WHERE appointment_date BETWEEN :start_date AND :end_date AND status = 0";
+    // Base SQL query to select pending appointments within the date range and status 0, including user name
+    $sql_pending = "
+        SELECT orders.*, users.name AS name
+        FROM orders 
+        JOIN users ON users.id = orders.employee_id 
+        WHERE orders.appointment_date BETWEEN :start_date AND :end_date 
+        AND orders.status = 4
+    ";
 
-    // If $kyw (keyword) is provided, add filter by nguoidat_ten (assuming it's the person's name)
+    // If $kyw (keyword) is provided, add filter by users.name
     if ($kyw !== null) {
-        $sql_pending .= " AND nguoidat_ten LIKE :keyword";
+        $sql_pending .= " AND users.name LIKE :keyword";
         $stmt_pending = $pdo->prepare($sql_pending);
         $stmt_pending->execute([
             ':start_date' => $start_date,
@@ -248,6 +313,38 @@ function get_appointments_by_status_($start_date, $end_date, $kyw = null)
         'pending' => $pending_appointments,
     ];
 }
+//ĐÂY LÀ ĐƠN HÀNG HOÀN THÀNH --TUY NHIÊN ĐỔI TÊN SỢ LỖI
+function get_appointments_by_status_order($start_date, $end_date, $kyw = null)
+{
+    $pdo = pdo_get_connection();
+
+    // Base SQL query to select pending appointments within the date range and status 0, including user name
+    $sql = "
+        SELECT orders.*, users.name AS name
+        FROM orders 
+        JOIN users ON users.id = orders.employee_id 
+        WHERE orders.appointment_date BETWEEN :start_date AND :end_date 
+    ";
+    if ($kyw) {
+        $sql .= " AND orders.customer_name LIKE :keyword";
+    }
+
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':start_date', $start_date);
+    $stmt->bindParam(':end_date', $end_date);
+
+    if ($kyw) {
+        $keyword = "%{$kyw}%";
+        $stmt->bindParam(':keyword', $keyword);
+    }
+
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+
+
+
 
 function update_status($id, $status)
 {
